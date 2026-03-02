@@ -1,0 +1,45 @@
+# ============================================================
+#  Per-Variant LoRA Configuration
+# ============================================================
+#  Each variant maps to a product line.  The system tracks
+#  a separate LoRA subspace per variant for O-LoRA.
+
+variants:
+  variant_001:
+    name:         "Line A – Type 1"
+    lora_rank:    8
+    replay_budget: 100
+    baseline_accuracy: 0.94
+    classes: ["defect_a", "defect_b", "ok"]
+
+  variant_002:
+    name:         "Line A – Type 2"
+    lora_rank:    8
+    replay_budget: 100
+    baseline_accuracy: 0.93
+    classes: ["defect_a", "defect_c", "ok"]
+
+  variant_003:
+    name:         "Line B – Type 1"
+    lora_rank:    8
+    replay_budget: 100
+    baseline_accuracy: 0.91
+    classes: ["defect_b", "defect_d", "ok"]
+
+  variant_004:
+    name:         "Line B – Type 2"
+    lora_rank:    8
+    replay_budget: 100
+    baseline_accuracy: 0.92
+    classes: ["defect_a", "defect_b", "defect_d", "ok"]
+
+  variant_005:
+    name:         "Line C – Type 1"
+    lora_rank:    8
+    replay_budget: 100
+    baseline_accuracy: 0.90
+    classes: ["defect_c", "defect_e", "ok"]
+
+# Global class list (union of all variants)
+all_classes: ["defect_a", "defect_b", "defect_c", "defect_d", "defect_e", "ok"]
+num_classes: 6

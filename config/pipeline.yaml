@@ -1,0 +1,100 @@
+# ============================================================
+#  Edge Learner – Main Pipeline Configuration
+# ============================================================
+
+paths:
+  models_dir:        /data/models
+  buffer_dir:        /data/buffer
+  reference_dir:     /data/reference
+  training_cache:    /data/training_cache
+  logs_dir:          /data/logs
+  metrics_db:        /data/logs/metrics.db
+
+storage:
+  total_gb:          10
+  reserved_gb:       1          # always keep free
+  models_gb:         2
+  reference_gb:      3
+  buffer_gb:         2
+  cache_gb:          1.5
+  logs_gb:           0.5
+
+# ---- Stage 1: Data Collection --------------------------------
+collection:
+  conf_low_threshold:    0.30
+  conf_high_threshold:   0.70
+  collection_rate_limit: 0.2      # max frames/sec to buffer (1 per 5s)
+  max_buffer_size:       500      # images
+  jpeg_quality:          85
+  buffer_expiry_hours:   48
+
+# ---- Stage 2: First Screening --------------------------------
+screening:
+  base_model_path:       /data/models/base.pt
+  batch_size:            16
+  iou_threshold:         0.50
+  base_conf_floor:       0.50    # flag base.pt detections below this
+  timeout_seconds:       60
+
+# ---- Stage 3: Second Screening -------------------------------
+validation:
+  similarity_threshold:  0.75    # cosine sim for label inheritance
+  novel_threshold:       0.40    # below this → quarantine as novel
+  min_valid_samples:     20      # skip training if fewer
+  reference_split:
+    train:  0.70
+    val:    0.15
+    test:   0.15
+  timeout_seconds:       60
+
+# ---- Stage 4: LoRA Retraining --------------------------------
+training:
+  lora_rank:             8
+  lora_alpha:            16
+  lora_dropout:          0.05
+  learning_rate:         1.0e-4
+  batch_size:            4
+  gradient_accumulation: 4        # effective batch = 16
+  epochs:                8
+  max_dataset_size:      300      # subsample if exceeded
+  replay_fraction:       0.30     # 30% replay data
+  replay_per_variant:    100      # max exemplars per variant
+  gradient_checkpointing: true
+  timeout_seconds:       180
+  nan_loss_abort:        true
+
+  # O-LoRA
+  olora_enabled:         true
+  olora_rank:            8
+
+  # EWC
+  ewc_enabled:           true
+  ewc_lambda:            5000
+  ewc_fisher_samples:    200
+
+# ---- Stage 5: Evaluation & Deployment -----------------------
+evaluation:
+  min_overall_accuracy:      0.92
+  max_false_positive_rate:   0.03
+  max_variant_accuracy_drop: 0.02   # vs baseline
+  min_map50:                 0.70
+  latency_p95_ms:            100
+  latency_p99_ms:            200
+  quantization_delta_max:    0.01   # max accuracy drop FP32→INT8
+  post_deploy_monitor_frames: 100
+
+# ---- Orchestration ------------------------------------------
+orchestrator:
+  maintenance_cron:      "0 2 * * *"   # 02:00 daily
+  min_buffer_for_cycle:  20
+  max_consecutive_rejections: 3
+  mode_transition_timeout_s: 30
+
+# ---- Monitoring ---------------------------------------------
+monitoring:
+  latency_alert_ms:      100
+  fps_alert_threshold:   28
+  conf_shift_threshold:  0.10
+  ram_alert_gb:          3.5
+  npu_temp_alert_c:      85
+  check_interval_s:      10
