@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Data & models (large files)
+/data/
+/models/*.rknn
+/models/*.pt
+/models/*.onnx
+!models/.gitkeep
+
+# Logs & metrics DB
+*.log
+*.db
+*.sqlite
+
+# RKNN artifacts
+*.rknn
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
